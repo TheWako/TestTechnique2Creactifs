@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if app.user %}
+        <a href="{{ path('fos_user_security_logout') }}">
+            <button>Se déconnecter</button><br><br>
+        </a>
+        <div>
+            Dans quelle ville habites-tu ?<br>
+            <input type="text" id="addressInput"><br><br>
+        </div>
+        <div>
+            Désirez-vous entreprendre ?<br>
+            <input type="radio" id="contractorChoice1" name="contractorChoice" value="yes">
+            <label for="contactChoice1">Oui</label><br>
+
+            <input type="radio" id="contractorChoice1"
+             name="contractorChoice" value="no">
+            <label for="contactChoice2">Non</label><br><br>
+        </div>
+        <div>
+            Je veux entreprendre car: <br>
+            <input type="checkbox" name="contractor" class="contractor" value="choice1"> J'aime l'argent<br>
+            <input type="checkbox" name="contractor" class="contractor" value="choice2"> Je travaille en solo<br>
+            <input type="checkbox" name="contractor" class="contractor" value="choice3"> J'aime les défis<br><br>
+        </div>
+        <div>
+            Je ne veux pas entreprendre car: <br>
+            <input type="checkbox" name="noContractor" class="noContractor" value="choice4"> Le salariat c'est bien<br>
+            <input type="checkbox" name="noContractor" class="noContractor" value="choice5"> Je ne sais pas quoi faire<br>
+            <input type="checkbox" name="noContractor" class="noContractor" value="choice6"> je n'aime pas le risque<br><br>
+        </div>
+        <button id="resultButton" onclick="result('{{ app.user.firstname }}')">Valider</button><br>
+        <div id="resultBlock"></div>
+    {% else %}
+        <a href="{{ path('fos_user_security_login') }}">Connectez-vous</a> ou <a href="{{ path('fos_user_registration_register') }}">Inscrivez-vous</a>
+    {% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+    var isContractor = null;
+    var resultBlock = document.getElementById("resultBlock");
+    function result(name) {
+        var contractorValues = [];
+        var noContractorValues = [];
+        var contractorText = "";
+        var contractorValue = "";
+        var noContractorValue = "";
+        var addressInput = document.getElementById("addressInput").value;
+        var radios = document.getElementsByName('contractorChoice');
+        var noContractorElements = document.getElementsByClassName('noContractor');
+        resultBlock.innerHTML = "";
+        for(var i=0; noContractorElements[i]; ++i){
+              if(noContractorElements[i].checked){
+                   noContractorValues.push(noContractorElements[i].value);
+              }
+        }
+        var contractorElements = document.getElementsByClassName('contractor');
+        for(var i=0; contractorElements[i]; ++i){
+              if(contractorElements[i].checked){
+                   contractorValues.push(contractorElements[i].value);
+              }
+        }
+
+        for (var i = 0, length = radios.length; i < length; i++)
+        {
+            if (radios[i].checked)
+            {
+                if(radios[i].value == "yes"){
+                    contractorText = "désire entreprendre";
+                    isContractor = true;
+                }else{
+                    contractorText = "ne désire pas entreprendre";
+                    isContractor = false;
+                }
+                break;
+            }
+        }
+
+        if(name !== "" && addressInput && contractorText && (isContractor === true && contractorValues.length >= 1) || (isContractor === false && noContractorValues.length >= 1)){
+            console.log(contractorValues.length);
+            resultBlock.innerHTML = "Bonjour, je m'appelle "+ name +" et j'habite à "+ addressInput + ". Je "+ contractorText +" pour les raisons suivants:<br>";
+
+            if(isContractor){
+                for(var i in contractorValues){
+                    switch(contractorValues[i]){
+                        case 'choice1':
+                            contractorValue = "J'aime l'argent";
+                            break;
+                        case 'choice2':
+                            contractorValue = "Je travaille en solo";
+                            break;
+                        case 'choice3':
+                            contractorValue = "J'aime les défis";
+                            break;
+                    }
+                    resultBlock.innerHTML += "- "+ contractorValue +"<br>"
+                }
+            }else{
+                for(var i in noContractorValues){
+                    switch(noContractorValues[i]){
+                        case 'choice4':
+                            noContractorValue = "Le salariat c'est bien";
+                            break;
+                        case 'choice5':
+                            noContractorValue = "Je ne sais pas quoi faire";
+                            break;
+                        case 'choice6':
+                            noContractorValue = "J'aime n'aime pas le risque";
+                            break;
+                    }
+                    resultBlock.innerHTML += "- "+ noContractorValue+"<br>"
+                }
+            }
+        }else{
+            resultBlock.innerHTML = "";
+        }
+    }
+</script>
+{% endblock %}
